@@ -33,6 +33,7 @@ describe('GET /todos', () => {
 				for (let i=0; i<3; i++){
 					expect(res.body.todos[i].text).toEqual(todos[i].text);
 				}
+	
 			})
 			.end((err) => done(err));
    }); 
