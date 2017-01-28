@@ -83,7 +83,7 @@ describe('POST /todos',() => {
                 Todo.find().then((todos) => {
                     expect(todos.length).toBe(3);
                     done();
-                }).catch((err) => done(err));
+                }).catch((e) => done(e));
             })
     })
 })
@@ -125,7 +125,7 @@ describe('DELETE /todos:id', () => {
     
     it('should delete a todo by id', (done) => {
             
-        var id = todos[0]._id.toHexString();
+        let id = todos[0]._id.toHexString();
 
         request(app)
             .delete(`/todos/${id}`)
@@ -149,7 +149,7 @@ describe('DELETE /todos:id', () => {
 
     it('should return 404 if not found', (done) => {
         
-        var id = new ObjectID().toHexString();
+        let id = new ObjectID().toHexString();
 
         request(app)
             .delete(`/todos/${id}`)
