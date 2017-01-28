@@ -54,13 +54,13 @@ app.get('/todos/:id', (req, res, next) => {
 })
 
 app.delete('/todos/:id', (req, res, next) => {
-    var id = new ObjectID(req.params.id);
+    var id = req.params.id;
 
     if (!ObjectID.isValid(id)){
         return res.status(404).send({});
     }
 
-    Todo.findByIdAndRemove(id.toHexString()).then((todo) => {
+    Todo.findByIdAndRemove(id).then((todo) => {
         
         if(!todo){
             return res.status(404).send({});
