@@ -85,7 +85,7 @@ app.patch('/todos/:id', (req, res, next) => {
 
     let body = _.pick(req.body, ['text', 'completed']);
 
-    if (_.isBoolean(body.completed && body.completed)){
+    if (_.isBoolean(body.completed) && body.completed){
         body.completedAt = new Date().getTime();
     } else {
         body.completed = false;
