@@ -1,13 +1,16 @@
+'use strict';
+
 require('./config/config');
 
 const express = require('express');
 const bodyParser = require('body-parser');
 const _ = require('lodash');
+const {ObjectID} = require('mongodb');
 
 const {mongoose} = require('./db/mongoose');
 const {Todo} = require('./models/todo');
 const {User} = require('./models/user');
-const {ObjectID} = require('mongodb');
+const {authenticate} = require('./middleware/authenticate');
 
 const app = express();
 const port = process.env.PORT;
@@ -15,7 +18,7 @@ const port = process.env.PORT;
 app.use(bodyParser.json());
 
 app.post('/todos', (req, res, next) => {
-    let todo = new Todo({
+    const todo = new Todo({
         text: req.body.text
     });
 
@@ -36,7 +39,7 @@ app.get('/todos', (req, res, next) => {
 
 app.get('/todos/:id', (req, res, next) => {
 
-    let id = req.params.id;
+    const id = req.params.id;
     if(!ObjectID.isValid(id)){
        return res.status(404).send({});
     }
@@ -54,7 +57,7 @@ app.get('/todos/:id', (req, res, next) => {
 })
 
 app.delete('/todos/:id', (req, res, next) => {
-    let id = req.params.id;
+    const id = req.params.id;
 
     if (!ObjectID.isValid(id)){
         return res.status(404).send({});
@@ -75,13 +78,13 @@ app.delete('/todos/:id', (req, res, next) => {
 })
 
 app.patch('/todos/:id', (req, res, next) => {
-    let id = req.params.id;
+    const id = req.params.id;
 
     if (!ObjectID.isValid(id)){
         return res.status(404).send({});
     }
 
-    let body = _.pick(req.body, ['text', 'completed']);
+    const body = _.pick(req.body, ['text', 'completed']);
 
     if (_.isBoolean(body.completed) && body.completed){
         body.completedAt = new Date().getTime();
@@ -105,14 +108,12 @@ app.patch('/todos/:id', (req, res, next) => {
 
 app.post('/users', (req, res, next) => {
 
-    let body = _.pick(req.body, ['email', 'password']);
+    const body = _.pick(req.body, ['email', 'password']);
 
-    let user = new User(body);
+    const user = new User(body);
 
-    user.save().then(() => {
-        return user.generateAuthToken();
-
-    }).then((token) => {
+    user.generateAuthToken()
+    .then((token) => {
         console.log(token);
         res.header('x-auth', token).send(user);
     }).catch((err) => {
@@ -120,6 +121,9 @@ app.post('/users', (req, res, next) => {
     });
 });
 
+app.get('/users/me', authenticate, (req, res, next) => {
+    res.send(req.user);
+})
 
 app.listen(port, () => {
     console.log('Started on port ', port);
