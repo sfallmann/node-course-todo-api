@@ -293,11 +293,8 @@ describe('POST /users', () => {
 
         request(app)
             .post('/users')
-            .send({ email: email, password })
-            .expect(400)
-            .expect((res) => {
-                console.log(res.body._id);
-            })            
+            .send({ email, password })
+            .expect(400)     
             .end(done);
 
     }); 
