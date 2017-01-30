@@ -288,7 +288,7 @@ describe('POST /users', () => {
     });
 
     it('should not create a new user for an exising email address', (done) => {
-        const email = 'email@domain.com';
+        const email = users[0].email;
         const password = 'Ag00dp4$$w0rd!';
 
         request(app)
