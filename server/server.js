@@ -39,14 +39,17 @@ app.get('/todos', authenticate, (req, res, next) => {
     });
 })
 
-app.get('/todos/:id', (req, res, next) => {
+app.get('/todos/:id', authenticate, (req, res, next) => {
 
     const id = req.params.id;
     if(!ObjectID.isValid(id)){
        return res.status(404).send({});
     }
 
-    Todo.findById(id).then((todo) => {
+    Todo.findOne({
+        _id: id,
+        _creator: req.user._id
+    }).then((todo) => {
 
         if (!todo){
             return res.status(404).send({});
@@ -58,14 +61,17 @@ app.get('/todos/:id', (req, res, next) => {
     });
 })
 
-app.delete('/todos/:id', (req, res, next) => {
+app.delete('/todos/:id', authenticate, (req, res, next) => {
     const id = req.params.id;
 
     if (!ObjectID.isValid(id)){
         return res.status(404).send({});
     }
 
-    Todo.findByIdAndRemove(id).then((todo) => {
+    Todo.findOneAndRemove({
+        _id: id,
+        _creator: req.user._id
+    }).then((todo) => {
         
         if(!todo){
             return res.status(404).send({});
@@ -79,14 +85,14 @@ app.delete('/todos/:id', (req, res, next) => {
 
 })
 
-app.patch('/todos/:id', (req, res, next) => {
+app.patch('/todos/:id', authenticate, (req, res, next) => {
     const id = req.params.id;
-
+    const body = _.pick(req.body, ['text', 'completed']);
     if (!ObjectID.isValid(id)){
         return res.status(404).send({});
     }
 
-    const body = _.pick(req.body, ['text', 'completed']);
+
 
     if (_.isBoolean(body.completed) && body.completed){
         body.completedAt = new Date().getTime();
@@ -95,18 +101,16 @@ app.patch('/todos/:id', (req, res, next) => {
         body.completedAt = null;
     }
 
-    Todo.findByIdAndUpdate(id, body, {new:true}).then((todo) => {
+  Todo.findOneAndUpdate({_id: id, _creator: req.user._id}, {$set: body}, {new: true}).then((todo) => {
+    if (!todo) {
+      return res.status(404).send();
+    }
 
-        if(!todo){
-            return res.status(404).send({});
-        }       
-
-        res.send({todo});
-
-    }).catch((err) => {
-        res.status(400).send(err);
-    })
-})
+    res.send({todo});
+  }).catch((e) => {
+    res.status(400).send();
+  })
+});
 
 app.post('/users', (req, res, next) => {
 
